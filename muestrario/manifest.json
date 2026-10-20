@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Muestrario",
-  "version": "0.2.0",
-  "description": "Recolecta de la pantalla solo lo que pedís. Esta versión guarda la paleta de colores.",
+  "version": "0.3.7",
+  "description": "Recolecta de la pantalla solo lo que pedís: colores, markdown, links, medios y tablas.",
   "minimum_chrome_version": "120",
   "permissions": ["storage", "activeTab", "scripting", "sidePanel", "tabs"],
   "host_permissions": ["<all_urls>"],

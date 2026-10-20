@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../kyz/css/badges.css" />
     <link rel="stylesheet" href="../kyz/css/cards.css" />
     <link rel="stylesheet" href="../kyz/css/feedback.css" />
-    <link rel="stylesheet" href="sidepanel.css" />
+    <link rel="stylesheet" href="sidepanel.css?v=0.3.7" />
   </head>
   <body>
     <header class="top">
@@ -31,10 +31,30 @@
 
     <section class="controls" aria-label="Recolección">
       <div class="checks">
-        <label class="kyz-check"><input id="opt-css" type="checkbox" checked /> Colores del CSS</label>
-        <label class="kyz-check"><input id="opt-pixels" type="checkbox" checked /> Colores visibles</label>
+        <label class="kyz-check"><input id="opt-css" type="checkbox" /> Colores del CSS</label>
+        <label class="kyz-check"><input id="opt-pixels" type="checkbox" /> Colores visibles</label>
+        <label class="kyz-check"><input id="opt-markdown" type="checkbox" checked /> Markdown</label>
+        <label class="kyz-check"><input id="opt-links" type="checkbox" /> Links</label>
+        <label class="kyz-check"><input id="opt-media" type="checkbox" /> Medios</label>
+        <label class="kyz-check"><input id="opt-tables" type="checkbox" /> Tablas</label>
       </div>
+      <details class="secret">
+        <summary>Clave de OpenAI</summary>
+        <div class="secret-body">
+          <p class="kyz-help">Pegá una clave API de OpenAI, las que empiezan con sk-. Queda en este navegador, sin cifrado del complemento, y solo se envía a OpenAI.</p>
+          <div class="kyz-field">
+            <label class="kyz-label" for="llm-key">Clave API de OpenAI</label>
+            <input id="llm-key" class="kyz-input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…" />
+          </div>
+          <div class="secret-actions">
+            <button id="save-key" class="kyz-btn kyz-btn--ghost kyz-btn--sm" type="button">Guardar en este navegador</button>
+            <button id="clear-key" class="kyz-btn kyz-btn--danger kyz-btn--sm" type="button">Borrar</button>
+          </div>
+          <p id="key-status" class="kyz-help" role="status"></p>
+        </div>
+      </details>
       <button id="capture" class="kyz-btn kyz-btn--primary kyz-btn--block" type="button">Capturar esta pantalla</button>
+      <button id="normalize-download" class="kyz-btn kyz-btn--secondary kyz-btn--block" type="button" hidden>Normalizar y descargar</button>
       <p id="status" class="status kyz-help" role="status"></p>
     </section>
 
@@ -47,6 +67,25 @@
         </div>
         <button id="export-one" type="button" class="kyz-btn kyz-btn--ghost kyz-btn--sm">Exportar</button>
       </div>
+      <section id="markdown-block" hidden>
+        <div class="view-head">
+          <h3>Contenido por sección <span id="markdown-count" class="kyz-badge"></span></h3>
+          <button id="download-markdown" type="button" class="kyz-btn kyz-btn--ghost kyz-btn--sm">Descargar .md</button>
+        </div>
+        <div id="section-list"></div>
+      </section>
+      <section id="links-block" hidden>
+        <h3>Links <span id="links-count" class="kyz-badge"></span></h3>
+        <ul id="links-list" class="plain-list"></ul>
+      </section>
+      <section id="media-block" hidden>
+        <h3>Medios <span id="media-count" class="kyz-badge"></span></h3>
+        <ul id="media-list" class="plain-list"></ul>
+      </section>
+      <section id="tables-block" hidden>
+        <h3>Tablas <span id="tables-count" class="kyz-badge"></span></h3>
+        <div id="tables-list"></div>
+      </section>
       <section id="css-block" hidden>
         <h3>En el CSS <span id="css-count" class="kyz-badge"></span></h3>
         <p class="kyz-help">El nombre, como Login, es el texto de ese elemento. Ver lo recuadra en la pestaña.</p>
@@ -102,8 +141,8 @@
         <path d="M20 18 L34 32 L20 46" fill="none" stroke="#4E9A06" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
         <rect x="38" y="40" width="12" height="6" rx="1.5" fill="#38BDF8"/>
       </svg>
-      <p>La captura corre cuando la pedís. Los datos quedan en este navegador.</p>
+      <p>La captura corre cuando la pedís. Los datos quedan en este navegador. Versión 0.3.7</p>
     </footer>
-    <script type="module" src="sidepanel.js"></script>
+    <script type="module" src="sidepanel.js?v=0.3.7"></script>
   </body>
 </html>

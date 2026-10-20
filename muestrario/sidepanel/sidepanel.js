@@ -1,16 +1,21 @@
 import { collectPageColors, highlightColor } from "../collectors/colors.js";
-import { loadLlmConfig, markdownFromNormalized, normalizeCapture } from "../lib/llm.js";
+import { collectPageContent } from "../collectors/content.js";
+import { LLM_STORAGE_KEY, loadLlmConfig, markdownFromNormalized, normalizeCapture, redactSecrets } from "../lib/llm.js";
 import { quantizeImageData } from "../lib/quantize.js";
 
 const STORAGE_KEY = "captures";
 const OPTIONS_KEY = "options";
 const MAX_CAPTURES = 30;
-const VERSION = "0.1.0";
+const VERSION = "0.3.7";
 
 const captureButton = document.querySelector("#capture");
 const statusNode = document.querySelector("#status");
 const cssOption = document.querySelector("#opt-css");
 const pixelOption = document.querySelector("#opt-pixels");
+const markdownOption = document.querySelector("#opt-markdown");
+const linksOption = document.querySelector("#opt-links");
+const mediaOption = document.querySelector("#opt-media");
+const tablesOption = document.querySelector("#opt-tables");
 const view = document.querySelector("#view");
 const historyNode = document.querySelector("#history");
 const historyEmpty = document.querySelector("#history-empty");
@@ -38,7 +43,7 @@ function rejectionReason(url) {
 }
 
 function humanize(error) {
-  const message = error && error.message ? error.message : String(error);
+  const message = redactSecrets(error && error.message ? error.message : String(error));
   if (/cannot be scripted|cannot access|extensions gallery|Cannot access contents/i.test(message)) {
     return "Esta página no permite que un complemento la lea.";
   }
@@ -282,19 +287,32 @@ function showPane(name) {
   }
 }
 
+function documentFromNormalized(result, capture) {
+  const fromModel = String((result && result.markdown) || "").trim();
+  const source = String(capture.markdown || "").trim();
+  const enough = source.length < 800 || fromModel.length >= Math.min(source.length, 18000) * 0.45;
+  if (fromModel && enough) return fromModel;
+  const fallback = markdownFromNormalized(result || {}, capture);
+  if (!fromModel) return fallback;
+  return fromModel + "\n\n" + fallback;
+}
+
 function renderCapture(capture) {
   normalized = null;
   const llm = document.querySelector("#llm");
   const llmStatus = document.querySelector("#llm-status");
+  const normalizeDownload = document.querySelector("#normalize-download");
   document.querySelector("#llm-preview").hidden = true;
   if (llmStatus) llmStatus.textContent = "";
   if (!capture) {
     view.hidden = true;
     if (llm) llm.hidden = true;
+    if (normalizeDownload) normalizeDownload.hidden = true;
     return;
   }
   view.hidden = false;
   if (llm) llm.hidden = false;
+  if (normalizeDownload) normalizeDownload.hidden = false;
   document.querySelector("#page-title").textContent = capture.title || "Sin título";
   document.querySelector("#page-url").textContent = capture.url || "";
   const bits = [formatWhen(capture.createdAt), hostname(capture.url)];
@@ -342,6 +360,117 @@ function renderCapture(capture) {
   for (const color of pixelColors) {
     pixelGrid.append(swatchButton(color, percent(color.share)));
   }
+
+  renderContent(capture);
+}
+
+function renderContent(capture) {
+  const markdownBlock = document.querySelector("#markdown-block");
+  const sectionList = document.querySelector("#section-list");
+  sectionList.replaceChildren();
+  const sections = capture.sections && capture.sections.length
+    ? capture.sections
+    : capture.markdown
+      ? [{ title: capture.title || "Página", level: 1, markdown: capture.markdown }]
+      : [];
+  markdownBlock.hidden = sections.length === 0;
+  document.querySelector("#markdown-count").textContent = String(sections.length);
+  for (const section of sections) sectionList.append(sectionCard(section));
+
+  const links = capture.links || [];
+  const linksBlock = document.querySelector("#links-block");
+  const linksList = document.querySelector("#links-list");
+  linksList.replaceChildren();
+  linksBlock.hidden = links.length === 0;
+  document.querySelector("#links-count").textContent = String(links.length);
+  for (const link of links) linksList.append(linkItem(link));
+
+  const media = capture.media || [];
+  const mediaBlock = document.querySelector("#media-block");
+  const mediaList = document.querySelector("#media-list");
+  mediaList.replaceChildren();
+  mediaBlock.hidden = media.length === 0;
+  document.querySelector("#media-count").textContent = String(media.length);
+  for (const item of media) mediaList.append(mediaItem(item));
+
+  const tables = capture.tables || [];
+  const tablesBlock = document.querySelector("#tables-block");
+  const tablesList = document.querySelector("#tables-list");
+  tablesList.replaceChildren();
+  tablesBlock.hidden = tables.length === 0;
+  document.querySelector("#tables-count").textContent = String(tables.length);
+  for (const table of tables) tablesList.append(tableCard(table));
+}
+
+function sectionCard(section) {
+  const card = document.createElement("article");
+  card.className = "table-card";
+  const title = document.createElement("strong");
+  title.textContent = section.title || "Sección";
+  const body = document.createElement("pre");
+  body.className = "llm-pane";
+  body.textContent = section.markdown || "";
+  card.append(title, body);
+  return card;
+}
+
+function linkItem(link) {
+  const item = document.createElement("li");
+  const anchor = document.createElement("a");
+  anchor.href = link.href;
+  anchor.target = "_blank";
+  anchor.rel = "noreferrer";
+  anchor.textContent = link.text || link.href;
+  const meta = document.createElement("small");
+  meta.textContent = (link.kind || "") + " · " + link.href;
+  item.append(anchor, meta);
+  return item;
+}
+
+function mediaItem(item) {
+  const row = document.createElement("li");
+  const title = document.createElement("strong");
+  title.textContent = item.alt || item.kind || "medio";
+  const meta = document.createElement("small");
+  meta.textContent = (item.kind || "") + " · " + item.src;
+  row.append(title, meta);
+  return row;
+}
+
+function tableCard(table) {
+  const card = document.createElement("div");
+  card.className = "table-card";
+  if (table.caption) {
+    const caption = document.createElement("p");
+    caption.textContent = table.caption;
+    card.append(caption);
+  }
+  const grid = document.createElement("table");
+  grid.className = "mini-table";
+  if (table.headers && table.headers.length) {
+    const head = document.createElement("thead");
+    const row = document.createElement("tr");
+    for (const header of table.headers) {
+      const cell = document.createElement("th");
+      cell.textContent = header;
+      row.append(cell);
+    }
+    head.append(row);
+    grid.append(head);
+  }
+  const body = document.createElement("tbody");
+  for (const values of table.rows || []) {
+    const row = document.createElement("tr");
+    for (const value of values) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+  grid.append(body);
+  card.append(grid);
+  return card;
 }
 
 function palettePreview(capture) {
@@ -397,15 +526,35 @@ async function persist(next) {
 
 async function saveOptions() {
   await chrome.storage.local.set({
-    [OPTIONS_KEY]: { css: cssOption.checked, pixels: pixelOption.checked },
+    [OPTIONS_KEY]: {
+      css: cssOption.checked,
+      pixels: pixelOption.checked,
+      markdown: markdownOption.checked,
+      links: linksOption.checked,
+      media: mediaOption.checked,
+      tables: tablesOption.checked,
+    },
   });
 }
 
+function collectorState() {
+  return {
+    css: Boolean(document.querySelector("#opt-css") && document.querySelector("#opt-css").checked),
+    pixels: Boolean(document.querySelector("#opt-pixels") && document.querySelector("#opt-pixels").checked),
+    markdown: Boolean(document.querySelector("#opt-markdown") && document.querySelector("#opt-markdown").checked),
+    links: Boolean(document.querySelector("#opt-links") && document.querySelector("#opt-links").checked),
+    media: Boolean(document.querySelector("#opt-media") && document.querySelector("#opt-media").checked),
+    tables: Boolean(document.querySelector("#opt-tables") && document.querySelector("#opt-tables").checked),
+  };
+}
+
 async function captureActiveTab() {
-  const wantCss = cssOption.checked;
-  const wantPixels = pixelOption.checked;
-  if (!wantCss && !wantPixels) {
-    setStatus("Marcá al menos un recolector.");
+  const opts = collectorState();
+  const wantCss = opts.css;
+  const wantPixels = opts.pixels;
+  const wantContent = opts.markdown || opts.links || opts.media || opts.tables;
+  if (!wantCss && !wantPixels && !wantContent) {
+    setStatus("Marcá al menos un recolector: colores, markdown, links, medios o tablas.");
     return;
   }
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -415,7 +564,9 @@ async function captureActiveTab() {
     return;
   }
 
+  const normalizeDownload = document.querySelector("#normalize-download");
   captureButton.disabled = true;
+  if (normalizeDownload) normalizeDownload.disabled = true;
   captureButton.textContent = "Capturando…";
   setStatus("");
 
@@ -429,7 +580,17 @@ async function captureActiveTab() {
     const shotPromise = wantPixels
       ? chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" })
       : Promise.resolve(null);
-    const [cssSettled, shotSettled] = await Promise.allSettled([cssPromise, shotPromise]);
+    const contentPromise = wantContent
+      ? chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: collectPageContent,
+        })
+      : Promise.resolve(null);
+    const [cssSettled, shotSettled, contentSettled] = await Promise.allSettled([
+      cssPromise,
+      shotPromise,
+      contentPromise,
+    ]);
 
     let page = null;
     if (wantCss) {
@@ -446,11 +607,19 @@ async function captureActiveTab() {
       pixelColors = await quantizeDataUrl(shotSettled.value);
     }
 
+    let content = null;
+    if (wantContent) {
+      if (contentSettled.status === "rejected") throw contentSettled.reason;
+      content = contentSettled.value && contentSettled.value[0] && contentSettled.value[0].result;
+      if (!content) throw new Error("La página no devolvió contenido.");
+      if (content.error) throw new Error(content.error);
+    }
+
     const capture = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      url: (page && page.url) || tab.url || "",
-      title: (page && page.title) || tab.title || "",
+      url: (content && content.url) || (page && page.url) || tab.url || "",
+      title: (content && content.title) || (page && page.title) || tab.title || "",
       viewport: page && page.viewport,
       scannedElements: page && page.scannedElements,
       truncated: Boolean(page && page.truncated),
@@ -458,6 +627,12 @@ async function captureActiveTab() {
       cssColors: (page && page.colors) || [],
       variables: (page && page.variables) || [],
       pixelColors,
+      metadata: wantContent ? content.metadata : null,
+      sections: opts.markdown ? content.sections || [] : [],
+      markdown: opts.markdown ? content.markdown : "",
+      links: opts.links ? content.links : [],
+      media: opts.media ? content.media : [],
+      tables: opts.tables ? content.tables : [],
     };
     selectedId = capture.id;
     await persist([capture, ...captures]);
@@ -466,37 +641,61 @@ async function captureActiveTab() {
     const parts = [];
     if (wantCss) parts.push((capture.cssColors || []).length + " colores de CSS");
     if (wantPixels) parts.push(pixelColors.length + " colores visibles");
-    setStatus("Listo: " + parts.join(" y ") + ".");
+    if (opts.markdown) parts.push((capture.sections || []).length + " secciones");
+    if (opts.links) parts.push((capture.links || []).length + " links");
+    if (opts.media) parts.push((capture.media || []).length + " medios");
+    if (opts.tables) parts.push((capture.tables || []).length + " tablas");
+    setStatus("Listo: " + parts.join(", ") + ".");
   } catch (error) {
     setStatus(humanize(error));
   } finally {
     captureButton.disabled = false;
     captureButton.textContent = "Capturar esta pantalla";
+    if (normalizeDownload) normalizeDownload.disabled = false;
   }
 }
 
-document.querySelector("#normalize").addEventListener("click", async () => {
+async function runNormalize(downloadAfter) {
   const capture = captures.find((item) => item.id === selectedId);
-  const button = document.querySelector("#normalize");
+  const previewButton = document.querySelector("#normalize");
+  const downloadButton = document.querySelector("#normalize-download");
   const llmStatus = document.querySelector("#llm-status");
   if (!capture) return;
-  button.disabled = true;
-  button.textContent = "Normalizando…";
-  llmStatus.textContent = "";
+  previewButton.disabled = true;
+  downloadButton.disabled = true;
+  previewButton.textContent = "Normalizando…";
+  downloadButton.textContent = "Normalizando…";
+  if (llmStatus) llmStatus.textContent = "";
+  setStatus("Normalizando la extracción…");
   try {
     const config = await loadLlmConfig();
-    normalized = await normalizeCapture(config, capture);
+    const result = await normalizeCapture(config, capture);
+    result.markdown = documentFromNormalized(result, capture);
+    normalized = result;
     renderNormalized(normalized, capture);
-    llmStatus.textContent = "Listo para revisar y descargar.";
+    if (downloadAfter) {
+      download("muestrario-normalizado-" + stamp() + ".md", result.markdown, "text/markdown");
+      setStatus("Descargué el markdown normalizado.");
+      if (llmStatus) llmStatus.textContent = "Listo. El archivo ya se descargó.";
+    } else {
+      setStatus("");
+      if (llmStatus) llmStatus.textContent = "Listo para revisar y descargar.";
+    }
   } catch (error) {
     normalized = null;
     document.querySelector("#llm-preview").hidden = true;
-    llmStatus.textContent = humanize(error);
+    setStatus(humanize(error));
+    if (llmStatus) llmStatus.textContent = humanize(error);
   } finally {
-    button.disabled = false;
-    button.textContent = "Normalizar";
+    previewButton.disabled = false;
+    downloadButton.disabled = false;
+    previewButton.textContent = "Normalizar";
+    downloadButton.textContent = "Normalizar y descargar";
   }
-});
+}
+
+document.querySelector("#normalize").addEventListener("click", () => runNormalize(false));
+document.querySelector("#normalize-download").addEventListener("click", () => runNormalize(true));
 
 for (const pane of ["vista", "markdown", "json"]) {
   document.querySelector("#tab-" + pane).addEventListener("click", () => showPane(pane));
@@ -505,8 +704,8 @@ for (const pane of ["vista", "markdown", "json"]) {
 document.querySelector("#download-md").addEventListener("click", () => {
   const capture = captures.find((item) => item.id === selectedId);
   if (!normalized || !capture) return;
-  const markdown = normalized.markdown || markdownFromNormalized(normalized, capture);
-  download("muestrario-" + stamp() + ".md", markdown, "text/markdown");
+  const markdown = normalized.markdown || documentFromNormalized(normalized, capture);
+  download("muestrario-normalizado-" + stamp() + ".md", markdown, "text/markdown");
 });
 
 document.querySelector("#download-json").addEventListener("click", () => {
@@ -514,9 +713,24 @@ document.querySelector("#download-json").addEventListener("click", () => {
   download("muestrario-normalizado-" + stamp() + ".json", normalized);
 });
 
+function onOptionChange() {
+  if (document.querySelector(".checks input:checked")) setStatus("");
+  saveOptions();
+}
+
 captureButton.addEventListener("click", captureActiveTab);
-cssOption.addEventListener("change", saveOptions);
-pixelOption.addEventListener("change", saveOptions);
+cssOption.addEventListener("change", onOptionChange);
+pixelOption.addEventListener("change", onOptionChange);
+markdownOption.addEventListener("change", onOptionChange);
+linksOption.addEventListener("change", onOptionChange);
+mediaOption.addEventListener("change", onOptionChange);
+tablesOption.addEventListener("change", onOptionChange);
+
+document.querySelector("#download-markdown").addEventListener("click", () => {
+  const capture = captures.find((item) => item.id === selectedId);
+  if (!capture || !capture.markdown) return;
+  download("muestrario-" + stamp() + ".md", capture.markdown, "text/markdown");
+});
 
 document.querySelector("#export-one").addEventListener("click", () => {
   const capture = captures.find((item) => item.id === selectedId);
@@ -539,12 +753,56 @@ document.querySelector("#clear-history").addEventListener("click", async () => {
   setStatus("Se borraron las recolecciones.");
 });
 
+async function refreshKeyStatus() {
+  const node = document.querySelector("#key-status");
+  try {
+    const config = await loadLlmConfig();
+    if (config.source === "navegador") node.textContent = "Clave de OpenAI guardada en este navegador.";
+    else if (config.source === "desarrollo") node.textContent = "Desarrollo: se usa la clave de OpenAI del .env. No entra al paquete.";
+    else node.textContent = "Todavía no hay una clave de OpenAI en este navegador.";
+  } catch (error) {
+    node.textContent = humanize(error);
+  }
+}
+
+document.querySelector("#save-key").addEventListener("click", async () => {
+  const input = document.querySelector("#llm-key");
+  const value = input.value.trim();
+  if (!value) {
+    document.querySelector("#key-status").textContent = "Pegá la clave API de OpenAI antes de guardarla.";
+    return;
+  }
+  if (!value.startsWith("sk-")) {
+    document.querySelector("#key-status").textContent = "Se espera una clave API de OpenAI, que empieza con sk-.";
+    return;
+  }
+  const current = await chrome.storage.local.get(LLM_STORAGE_KEY);
+  const previous = current[LLM_STORAGE_KEY] || {};
+  await chrome.storage.local.set({
+    [LLM_STORAGE_KEY]: { ...previous, apiKey: value, baseUrl: "https://api.openai.com/v1" },
+  });
+  input.value = "";
+  await refreshKeyStatus();
+});
+
+document.querySelector("#clear-key").addEventListener("click", async () => {
+  const current = await chrome.storage.local.get(LLM_STORAGE_KEY);
+  const previous = { ...(current[LLM_STORAGE_KEY] || {}) };
+  delete previous.apiKey;
+  await chrome.storage.local.set({ [LLM_STORAGE_KEY]: previous });
+  document.querySelector("#llm-key").value = "";
+  await refreshKeyStatus();
+});
+
 const stored = await chrome.storage.local.get([STORAGE_KEY, OPTIONS_KEY]);
 captures = Array.isArray(stored[STORAGE_KEY]) ? stored[STORAGE_KEY] : [];
-if (stored[OPTIONS_KEY]) {
-  cssOption.checked = stored[OPTIONS_KEY].css !== false;
-  pixelOption.checked = stored[OPTIONS_KEY].pixels !== false;
-}
+cssOption.checked = false;
+pixelOption.checked = false;
+markdownOption.checked = true;
+linksOption.checked = false;
+mediaOption.checked = false;
+tablesOption.checked = false;
 selectedId = captures[0] ? captures[0].id : "";
 renderCapture(captures[0]);
 renderHistory();
+refreshKeyStatus();

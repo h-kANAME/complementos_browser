@@ -42,6 +42,10 @@ for dir in "${dirs[@]}"; do
   name="$(basename "$dir")"
   cp -a "$dir" "$stage/"
   rm -f "${stage}/${name}/.env"
+  if [[ -e "${stage}/${name}/.env" ]]; then
+    echo "[complementos] Quedó un .env en ${name}. No se carga el navegador." >&2
+    exit 1
+  fi
   staged+=("${stage}/${name}")
   echo "[complementos] ${name}"
 done
