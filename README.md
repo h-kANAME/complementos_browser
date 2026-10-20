@@ -21,6 +21,17 @@ Panel lateral para la pestaña que estás viendo. Al abrirlo queda marcado solo 
 
 Para el zip de publicación, desde `muestrario` ejecutá `powershell -File .\empaquetar.ps1`. El script corta si un `.env` iba a entrar al archivo.
 
+### yChannels
+
+Selector de canales de Yoizen CX Suite. Cada chat es un botón. Al pulsarlo, la conversación se abre dentro del panel. Si la pestaña todavía tiene la burbuja de una versión anterior, el complemento la quita. Hoy están **Producto autenticado** y **Producto anónimo**, los dos en `dev-chat.ysocial.net`.
+
+1. Abrí `chrome://extensions`.
+2. Activá el modo de desarrollador.
+3. Elegí «Cargar descomprimida» y señalá la carpeta `yChannels`.
+4. Abrí el ícono de yChannels, o usá `Alt+Shift+Y`.
+
+![Panel de yChannels en tema claro, con los dos canales](docs/capturas/ychannels.png)
+
 ## Todos juntos en Docker
 
 La primera vez descarga cerca de 1 GB.

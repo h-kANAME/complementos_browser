@@ -1,5 +1,6 @@
 .env
 **/.env
 dist/
+yChannels/
 !.env.example
 !**/.env.example
