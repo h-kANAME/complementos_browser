@@ -1,0 +1,43 @@
+/* kyz-ui · badges.css — badges, tags, chips. Depends on tokens. */
+
+.kyz-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--kyz-font-mono);
+  font-size: var(--kyz-text-xs);
+  font-weight: var(--kyz-weight-medium);
+  line-height: 1;
+  padding: 0.28rem 0.55rem;
+  border-radius: var(--kyz-radius-pill);
+  background: var(--kyz-surface-2);
+  color: var(--kyz-text-soft);
+  border: 1px solid var(--kyz-border);
+}
+.kyz-badge--primary { background: var(--kyz-primary-soft);  color: var(--kyz-primary);  border-color: transparent; }
+.kyz-badge--info    { background: var(--kyz-info-soft);     color: var(--kyz-info);     border-color: transparent; }
+.kyz-badge--success { background: var(--kyz-success-soft);  color: var(--kyz-success);  border-color: transparent; }
+.kyz-badge--warning { background: var(--kyz-warning-soft);  color: var(--kyz-warning);  border-color: transparent; }
+.kyz-badge--danger  { background: var(--kyz-danger-soft);   color: var(--kyz-danger);   border-color: transparent; }
+
+/* status dot */
+.kyz-badge__dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; }
+
+/* chip — removable tag */
+.kyz-chip {
+  display: inline-flex; align-items: center; gap: var(--kyz-space-2);
+  font-size: var(--kyz-text-sm);
+  padding: 0.3rem 0.35rem 0.3rem 0.7rem;
+  border-radius: var(--kyz-radius-pill);
+  background: var(--kyz-surface-2);
+  border: 1px solid var(--kyz-border);
+  color: var(--kyz-text);
+}
+.kyz-chip__x {
+  display: grid; place-content: center;
+  width: 1.15rem; height: 1.15rem; border-radius: 50%;
+  background: var(--kyz-surface-3); color: var(--kyz-text-muted);
+  border: none; cursor: pointer; font-size: 0.8rem; line-height: 1;
+  transition: background var(--kyz-fast) var(--kyz-ease), color var(--kyz-fast) var(--kyz-ease);
+}
+.kyz-chip__x:hover { background: var(--kyz-danger-soft); color: var(--kyz-danger); }

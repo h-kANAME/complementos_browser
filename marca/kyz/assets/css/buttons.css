@@ -1,0 +1,45 @@
+/* kyz-ui · buttons.css — depends on tokens. Copy & adapt as needed. */
+
+.kyz-btn {
+  --_bg: var(--kyz-surface-2);
+  --_fg: var(--kyz-text);
+  --_bd: var(--kyz-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kyz-space-2);
+  font-family: var(--kyz-font-body);
+  font-size: var(--kyz-text-sm);
+  font-weight: var(--kyz-weight-medium);
+  line-height: 1;
+  padding: 0.625rem 1rem;
+  border-radius: var(--kyz-radius-md);
+  border: 1px solid var(--_bd);
+  background: var(--_bg);
+  color: var(--_fg);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--kyz-fast) var(--kyz-ease),
+              border-color var(--kyz-fast) var(--kyz-ease),
+              transform var(--kyz-fast) var(--kyz-ease),
+              filter var(--kyz-fast) var(--kyz-ease);
+}
+.kyz-btn:hover  { filter: brightness(1.08); }
+.kyz-btn:active { transform: translateY(1px); }
+.kyz-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }
+
+/* variants */
+.kyz-btn--primary   { --_bg: var(--kyz-primary);   --_fg: var(--kyz-primary-contrast);   --_bd: transparent; }
+.kyz-btn--secondary { --_bg: var(--kyz-secondary); --_fg: var(--kyz-secondary-contrast); --_bd: transparent; }
+.kyz-btn--ghost     { --_bg: transparent; --_fg: var(--kyz-text); --_bd: var(--kyz-border-strong); }
+.kyz-btn--ghost:hover { --_bg: var(--kyz-surface-2); filter: none; }
+.kyz-btn--danger    { --_bg: var(--kyz-danger);    --_fg: #fff; --_bd: transparent; }
+.kyz-btn--subtle    { --_bg: var(--kyz-primary-soft); --_fg: var(--kyz-primary); --_bd: transparent; }
+.kyz-btn--link      { --_bg: transparent; --_bd: transparent; --_fg: var(--kyz-secondary); padding-inline: 0; }
+.kyz-btn--link:hover { filter: none; text-decoration: underline; }
+
+/* sizes */
+.kyz-btn--sm { font-size: var(--kyz-text-xs); padding: 0.4rem 0.7rem; }
+.kyz-btn--lg { font-size: var(--kyz-text-base); padding: 0.8rem 1.4rem; }
+.kyz-btn--icon { padding: 0.55rem; aspect-ratio: 1; }
+.kyz-btn--block { width: 100%; }

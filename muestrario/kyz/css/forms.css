@@ -1,0 +1,69 @@
+/* kyz-ui · forms.css — depends on tokens. */
+
+.kyz-field { display: flex; flex-direction: column; gap: var(--kyz-space-2); }
+
+.kyz-label {
+  font-size: var(--kyz-text-sm);
+  font-weight: var(--kyz-weight-medium);
+  color: var(--kyz-text-soft);
+}
+.kyz-label[data-required]::after { content: " *"; color: var(--kyz-danger); }
+
+.kyz-input,
+.kyz-textarea,
+.kyz-select {
+  width: 100%;
+  font-family: var(--kyz-font-body);
+  font-size: var(--kyz-text-sm);
+  color: var(--kyz-text);
+  background: var(--kyz-surface-3);
+  border: 1px solid var(--kyz-border);
+  border-radius: var(--kyz-radius-md);
+  padding: 0.6rem 0.75rem;
+  transition: border-color var(--kyz-fast) var(--kyz-ease),
+              box-shadow var(--kyz-fast) var(--kyz-ease);
+}
+.kyz-input::placeholder,
+.kyz-textarea::placeholder { color: var(--kyz-text-muted); }
+
+.kyz-input:focus,
+.kyz-textarea:focus,
+.kyz-select:focus {
+  outline: none;
+  border-color: var(--kyz-secondary);
+  box-shadow: 0 0 0 3px var(--kyz-secondary-soft);
+}
+.kyz-textarea { min-height: 6rem; resize: vertical; }
+
+.kyz-input[aria-invalid="true"],
+.kyz-textarea[aria-invalid="true"] {
+  border-color: var(--kyz-danger);
+  box-shadow: 0 0 0 3px var(--kyz-danger-soft);
+}
+
+.kyz-help  { font-size: var(--kyz-text-xs); color: var(--kyz-text-muted); }
+.kyz-error { font-size: var(--kyz-text-xs); color: var(--kyz-danger); }
+
+/* checkbox + radio */
+.kyz-check { display: inline-flex; align-items: center; gap: var(--kyz-space-2); cursor: pointer; }
+.kyz-check input {
+  appearance: none;
+  width: 1.15rem; height: 1.15rem;
+  border: 1px solid var(--kyz-border-strong);
+  background: var(--kyz-surface-3);
+  display: grid; place-content: center;
+  cursor: pointer;
+  transition: background var(--kyz-fast) var(--kyz-ease), border-color var(--kyz-fast) var(--kyz-ease);
+}
+.kyz-check input[type="checkbox"] { border-radius: var(--kyz-radius-sm); }
+.kyz-check input[type="radio"]    { border-radius: var(--kyz-radius-pill); }
+.kyz-check input:checked { background: var(--kyz-primary); border-color: var(--kyz-primary); }
+.kyz-check input[type="checkbox"]:checked::after {
+  content: ""; width: 0.34rem; height: 0.62rem;
+  border: solid var(--kyz-primary-contrast); border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-1px);
+}
+.kyz-check input[type="radio"]:checked::after {
+  content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%;
+  background: var(--kyz-primary-contrast);
+}

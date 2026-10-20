@@ -1,0 +1,8 @@
+/* kyz-ui tokens — import this ONE file to get the whole brand foundation.
+   Fonts: Space Grotesk (display) · Inter (body) · JetBrains Mono (code).
+   Self-host in production; the CDN import below is fine for prototypes. */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap");
+
+@import "./palette.css";
+@import "./base.css";

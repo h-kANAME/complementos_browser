@@ -1,0 +1,41 @@
+/* kyz-ui · feedback.css — alerts + empty state. Depends on tokens. */
+
+.kyz-alert {
+  --_accent: var(--kyz-info);
+  --_soft: var(--kyz-info-soft);
+  display: flex;
+  gap: var(--kyz-space-3);
+  padding: var(--kyz-space-3) var(--kyz-space-4);
+  border-radius: var(--kyz-radius-md);
+  background: var(--_soft);
+  border: 1px solid transparent;
+  border-inline-start: 3px solid var(--_accent);
+  color: var(--kyz-text);
+}
+.kyz-alert__icon  { color: var(--_accent); flex-shrink: 0; margin-top: 0.1rem; }
+.kyz-alert__title { font-weight: var(--kyz-weight-medium); font-size: var(--kyz-text-sm); }
+.kyz-alert__body  { font-size: var(--kyz-text-sm); color: var(--kyz-text-soft); }
+
+.kyz-alert--success { --_accent: var(--kyz-success); --_soft: var(--kyz-success-soft); }
+.kyz-alert--warning { --_accent: var(--kyz-warning); --_soft: var(--kyz-warning-soft); }
+.kyz-alert--danger  { --_accent: var(--kyz-danger);  --_soft: var(--kyz-danger-soft); }
+
+/* Empty state — an invitation to act, never a dead end. */
+.kyz-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--kyz-space-3);
+  padding: var(--kyz-space-8) var(--kyz-space-4);
+  border: 1px dashed var(--kyz-border-strong);
+  border-radius: var(--kyz-radius-lg);
+  color: var(--kyz-text-muted);
+}
+.kyz-empty__glyph {
+  font-family: var(--kyz-font-mono);
+  font-size: var(--kyz-text-2xl);
+  color: var(--kyz-primary);
+}
+.kyz-empty__title { font-family: var(--kyz-font-display); font-size: var(--kyz-text-lg); color: var(--kyz-text); }
+.kyz-empty__body  { font-size: var(--kyz-text-sm); max-width: 28rem; }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Muestrario</title>
+    <link rel="stylesheet" href="../kyz/tokens/index.css" />
+    <link rel="stylesheet" href="../kyz/css/buttons.css" />
+    <link rel="stylesheet" href="../kyz/css/forms.css" />
+    <link rel="stylesheet" href="../kyz/css/badges.css" />
+    <link rel="stylesheet" href="../kyz/css/cards.css" />
+    <link rel="stylesheet" href="../kyz/css/feedback.css" />
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <header class="top">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="1" y="1" width="62" height="62" rx="15" fill="var(--kyz-surface)" stroke="var(--kyz-primary)" stroke-opacity="0.4" stroke-width="1.5"/>
+        <rect x="14" y="13" width="36" height="22" rx="4" fill="var(--kyz-bg)" stroke="var(--kyz-border-strong)" stroke-width="1"/>
+        <circle cx="23" cy="24" r="3.5" fill="var(--kyz-primary)"/>
+        <circle cx="32" cy="24" r="3.5" fill="var(--kyz-secondary)"/>
+        <circle cx="41" cy="24" r="3.5" fill="var(--kyz-text)"/>
+        <path d="M36 40 L46 50" stroke="var(--kyz-primary)" stroke-width="3.5" stroke-linecap="round"/>
+        <rect x="44" y="48" width="8" height="4" rx="1" fill="var(--kyz-secondary)"/>
+      </svg>
+      <div>
+        <h1>Muestrario</h1>
+        <p class="lede">Capturá la pestaña activa y guardá solo los recolectores marcados.</p>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Recolección">
+      <div class="checks">
+        <label class="kyz-check"><input id="opt-css" type="checkbox" checked /> Colores del CSS</label>
+        <label class="kyz-check"><input id="opt-pixels" type="checkbox" checked /> Colores visibles</label>
+      </div>
+      <button id="capture" class="kyz-btn kyz-btn--primary kyz-btn--block" type="button">Capturar esta pantalla</button>
+      <p id="status" class="status kyz-help" role="status"></p>
+    </section>
+
+    <section id="view" class="view kyz-card" hidden>
+      <div class="view-head">
+        <div>
+          <h2 id="page-title"></h2>
+          <p id="page-url" class="url"></p>
+          <p id="page-meta" class="kyz-card__meta"></p>
+        </div>
+        <button id="export-one" type="button" class="kyz-btn kyz-btn--ghost kyz-btn--sm">Exportar</button>
+      </div>
+      <section id="css-block" hidden>
+        <h3>En el CSS <span id="css-count" class="kyz-badge"></span></h3>
+        <p class="kyz-help">El nombre, como Login, es el texto de ese elemento. Ver lo recuadra en la pestaña.</p>
+        <div id="css-grid" class="ref-list"></div>
+      </section>
+      <section id="var-block" hidden>
+        <h3>Variables</h3>
+        <ul id="var-list" class="vars"></ul>
+      </section>
+      <section id="pixel-block" hidden>
+        <h3>En la imagen</h3>
+        <p class="kyz-help">Muestreo del área visible, no de la página entera.</p>
+        <div id="pixel-grid" class="grid"></div>
+      </section>
+    </section>
+
+    <section id="llm" class="llm kyz-card" hidden>
+      <h2>Salida normalizada</h2>
+      <p class="kyz-help">El modelo ordena la captura. Revisá la vista y descargala.</p>
+      <button id="normalize" class="kyz-btn kyz-btn--secondary kyz-btn--block" type="button">Normalizar</button>
+      <p id="llm-status" class="kyz-help" role="status"></p>
+      <div id="llm-preview" hidden>
+        <div class="llm-tabs" role="tablist">
+          <button id="tab-vista" class="kyz-btn kyz-btn--subtle kyz-btn--sm" type="button">Vista</button>
+          <button id="tab-markdown" class="kyz-btn kyz-btn--ghost kyz-btn--sm" type="button">Markdown</button>
+          <button id="tab-json" class="kyz-btn kyz-btn--ghost kyz-btn--sm" type="button">JSON</button>
+        </div>
+        <div id="pane-vista" class="llm-pane"></div>
+        <pre id="pane-markdown" class="llm-pane" hidden></pre>
+        <pre id="pane-json" class="llm-pane" hidden></pre>
+        <div class="history-actions">
+          <button id="download-md" class="kyz-btn kyz-btn--primary kyz-btn--sm" type="button">Descargar .md</button>
+          <button id="download-json" class="kyz-btn kyz-btn--ghost kyz-btn--sm" type="button">Descargar .json</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="history-wrap" aria-label="Recolecciones guardadas">
+      <div class="history-head">
+        <h2>Recolecciones</h2>
+        <div class="history-actions">
+          <button id="export-all" type="button" class="kyz-btn kyz-btn--ghost kyz-btn--sm">Exportar todas</button>
+          <button id="clear-history" type="button" class="kyz-btn kyz-btn--danger kyz-btn--sm">Borrar</button>
+        </div>
+      </div>
+      <p id="history-empty" class="kyz-empty">Todavía no hay capturas en este navegador.</p>
+      <ul id="history" class="history"></ul>
+    </section>
+
+    <footer class="foot">
+      <svg class="isotipo" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="1" y="1" width="62" height="62" rx="15" fill="#2d2e32" stroke="#4E9A06" stroke-opacity="0.4" stroke-width="1.5"/>
+        <path d="M20 18 L34 32 L20 46" fill="none" stroke="#4E9A06" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="38" y="40" width="12" height="6" rx="1.5" fill="#38BDF8"/>
+      </svg>
+      <p>La captura corre cuando la pedís. Los datos quedan en este navegador.</p>
+    </footer>
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>
