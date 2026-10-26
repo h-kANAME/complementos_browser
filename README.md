@@ -32,6 +32,17 @@ Selector de canales de Yoizen CX Suite. Cada chat es un botón. Al pulsarlo, la 
 
 ![Panel de yChannels en tema claro, con los dos canales](docs/capturas/ychannels.png)
 
+### Ciclo de release
+
+Indicador del día. Al abrirlo muestra en qué fase del ciclo mensual estás: desarrollo, demo, alcance cerrado, freeze o build. Podés mirar otra fecha y saltar a las fechas del ciclo. Las fechas salen de la regla del ciclo y del calendario de feriados inamovibles; si el calendario compartido cambia una fecha, manda el calendario.
+
+1. Abrí `chrome://extensions`.
+2. Activá el modo de desarrollador.
+3. Elegí «Cargar descomprimida» y señalá la carpeta `tiemposRelease`.
+4. Abrí el ícono de Ciclo de release, o usá `Alt+Shift+R`.
+
+![Panel de Ciclo de release en tema claro, en fase de desarrollo](docs/capturas/tiemposRelease.png)
+
 ## Todos juntos en Docker
 
 La primera vez descarga cerca de 1 GB.
@@ -58,7 +69,7 @@ En este README, el complemento nuevo lleva su propia sección, con el uso y una 
 
 ## Marca
 
-Los complementos de esta carpeta usan KYZ. Los tokens están en `marca/kyz/` y cada complemento los copia dentro de sí (`kyz/tokens`, `kyz/css`) porque Chrome solo lee archivos de su propia carpeta. No se inventan colores, radios ni sombras: salen de `--kyz-*`.
+Muestrario usa KYZ. Los tokens están en `marca/kyz/` y el complemento los copia dentro de sí (`kyz/tokens`, `kyz/css`) porque Chrome solo lee archivos de su propia carpeta. Ciclo de release usa la marca Yoizen de `marca/yz/` (`palette.css`, `base.css`, `buttons.css`, `icon.svg`), copiada en `tiemposRelease/yz/`. No se inventan colores, radios ni sombras: salen de esos tokens.
 
 El ícono de Muestrario es un muestreador: una pantalla con tres tomas (verde, cielo y claro) y un cuentagotas. El isotipo KYZ queda en el pie del panel.
 

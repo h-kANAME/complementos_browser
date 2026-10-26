@@ -2,5 +2,9 @@
 **/.env
 dist/
 yChannels/
+tiemposRelease/
+marca/yz/
+docs/capturas/tiemposRelease.png
+docs/capturas/ychannels.png
 !.env.example
 !**/.env.example
